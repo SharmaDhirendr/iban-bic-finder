@@ -5,241 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>IBAN to BIC Finder</title>
   <meta name="description" content="Paste IBAN → Get BIC instantly. Works offline. Free."/>
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/manifest.json?v=2">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💸</text></svg>">
   <style>
+    :root { --blue:#3b82f6; --blue-700:#2563eb; --green:#10b981; --muted:#6b7280; --border:#e5e7eb; --bg:#f9fafb; --text:#1f2937; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
+    body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Arial,sans-serif; background: var(--bg); color: var(--text); padding: 1rem; line-height: 1.6; }
+    .container { max-width: 520px; margin: 2rem auto; }
+    h1 { font-size: 1.6rem; text-align: center; margin-bottom: .5rem; font-weight: 800; letter-spacing: .2px; }
+    p.subtitle { text-align:center; color:var(--muted); font-size:.95rem; margin-bottom:1rem; }
+    label { display:block; font-size:.9rem; font-weight:600; margin:.25rem 0 .4rem; }
+    input {
+      width: 100%; padding: 1rem; font-size: 1rem;
+      border: 2px solid var(--border); border-radius: .5rem; margin-bottom:.4rem;
+      transition: border-color .15s, box-shadow .15s;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     }
-    .card { 
-      background: white; 
-      border-radius: 1rem; 
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      padding: 2.5rem 2rem;
-      max-width: 500px;
-      width: 100%;
+    input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .hint { color: var(--muted); font-size: .9rem; margin:.25rem 0 .25rem; }
+    .err { display:none; color:#dc2626; font-size:.9rem; margin-top:.25rem; }
+    button {
+      width: 100%; padding: 1rem; background: var(--blue); color: white; border: none;
+      border-radius: 0.5rem; font-weight: 700; cursor: pointer; transition: transform .12s, background .12s, box-shadow .12s;
     }
-    .header {
-      text-align: center;
-      margin-bottom: 2rem;
+    button:hover { background: var(--blue-700); box-shadow: 0 6px 16px rgba(37,99,235,.25); transform: translateY(-1px); }
+    button:active { transform: translateY(0); box-shadow: none; }
+    .result {
+      margin-top: 1rem; padding: 1rem; background: #ecfdf5; border: 1px solid #a7f3d0;
+      border-radius: 0.5rem; display: none;
     }
-    .icon {
-      font-size: 3rem;
-      margin-bottom: 0.5rem;
+    .result.show { display: block; animation: fade .15s ease-out; }
+    .row { display:flex; align-items:center; gap:.5rem; margin:.35rem 0; }
+    .row strong { min-width: 90px; color:#065f46; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    .copy-btn {
+      background: var(--green); color: #fff; border: none; padding: .45rem .75rem;
+      border-radius: .375rem; cursor: pointer; font-size: .85rem; font-weight: 700; margin-left:.4rem;
+      transition: filter .12s, transform .12s;
     }
-    h1 { 
-      font-size: 1.75rem;
-      color: #1f2937;
-      margin-bottom: 0.5rem;
-      font-weight: 700;
-    }
-    .subtitle { 
-      color: #6b7280; 
-      font-size: 0.95rem;
-    }
-    .input-group {
-      margin-bottom: 1.5rem;
-    }
-    label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 0.5rem;
-    }
-    input { 
-      width: 100%; 
-      padding: 0.875rem 1rem; 
-      font-size: 1rem; 
-      border: 2px solid #e5e7eb; 
-      border-radius: 0.5rem;
-      transition: all 0.2s;
-      font-family: 'Courier New', monospace;
-    }
-    input:focus { 
-      outline: none; 
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    button { 
-      width: 100%; 
-      padding: 1rem; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; 
-      border: none; 
-      border-radius: 0.5rem; 
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer; 
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    button:hover { 
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-    }
-    button:active {
-      transform: translateY(0);
-    }
-    .result { 
-      margin-top: 2rem; 
-      padding: 1.5rem; 
-      background: #f0fdf4;
-      border: 2px solid #86efac;
-      border-radius: 0.75rem;
-      display: none;
-    }
-    .result.show { 
-      display: block;
-      animation: slideIn 0.3s ease-out;
-    }
-    .error { 
-      margin-top: 2rem; 
-      padding: 1.5rem; 
-      background: #fef2f2;
-      border: 2px solid #fca5a5;
-      border-radius: 0.75rem;
-      display: none;
-    }
-    .error.show { 
-      display: block;
-      animation: slideIn 0.3s ease-out;
-    }
-    .error-icon {
-      font-size: 2rem;
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-    .error-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #dc2626;
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-    .error-message {
-      color: #991b1b;
-      text-align: center;
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .result-item {
-      margin-bottom: 1rem;
-    }
-    .result-item:last-child {
-      margin-bottom: 0;
-    }
-    .result-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #059669;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.25rem;
-    }
-    .result-value {
-      font-size: 1.1rem;
-      color: #1f2937;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .copy-btn { 
-      background: #10b981;
-      color: white; 
-      border: none; 
-      padding: 0.5rem 1rem; 
-      border-radius: 0.375rem;
-      cursor: pointer; 
-      font-size: 0.813rem;
-      font-weight: 600;
-      transition: background 0.2s;
-    }
-    .copy-btn:hover {
-      background: #059669;
-    }
-    .footer { 
-      text-align: center; 
-      margin-top: 2rem; 
-      padding-top: 1.5rem;
-      border-top: 1px solid #e5e7eb;
-      font-size: 0.813rem; 
-      color: #9ca3af;
-    }
-    .badge {
-      display: inline-block;
-      background: #f3f4f6;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.75rem;
-      margin: 0 0.25rem;
-    }
+    .copy-btn:hover { filter: brightness(.95); transform: translateY(-1px); }
+    .copy-btn.copied { animation: pop .22s ease-out; }
+    .footer { text-align:center; margin-top: 1.25rem; font-size:.875rem; color: var(--muted); }
+    @keyframes fade { from { opacity:0; transform: translateY(-4px);} to {opacity:1; transform: translateY(0);} }
+    @keyframes pop { from{transform:scale(.98)} to{transform:scale(1)} }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="header">
-      <div class="icon">💸</div>
-      <h1>IBAN to BIC Finder</h1>
-      <p class="subtitle">Convert your IBAN to BIC code instantly</p>
+  <div class="container">
+    <h1>IBAN to BIC Finder</h1>
+    <p class="subtitle">Paste IBAN → Get BIC in 1 second</p>
+
+    <label for="iban">Paste IBAN</label>
+    <input type="text" id="iban" placeholder="e.g. DE89 3704 0044 0532 0130 00" autocomplete="off" autocapitalize="none" spellcheck="false" />
+    <p id="hint" class="hint">No data leaves your device. Works offline after first load.</p>
+    <p id="err" class="err" role="alert"></p>
+
+    <button id="findBtn" onclick="findBIC()">Find BIC</button>
+
+    <div id="result" class="result" aria-live="polite">
+      <p class="row"><strong>BIC:</strong> <span id="bic" class="mono"></span>
+        <button class="copy-btn" onclick="copy('bic', this)">Copy</button>
+      </p>
+      <p class="row"><strong>Bank:</strong> <span id="bank"></span></p>
+      <p class="row"><strong>Country:</strong> <span id="country"></span></p>
     </div>
 
-    <div class="input-group">
-      <label for="iban">Enter IBAN Number</label>
-      <input type="text" id="iban" placeholder="DE89 3704 0044 0532 0130 00" />
-    </div>
-
-    <button onclick="findBIC()">Find BIC Code</button>
-
-    <div id="result" class="result">
-      <div class="result-item">
-        <div class="result-label">BIC Code</div>
-        <div class="result-value">
-          <span id="bic"></span>
-          <button class="copy-btn" onclick="copy('bic', this)">Copy</button>
-        </div>
-      </div>
-      <div class="result-item">
-        <div class="result-label">Bank Name</div>
-        <div class="result-value">
-          <span id="bank"></span>
-        </div>
-      </div>
-      <div class="result-item">
-        <div class="result-label">Country</div>
-        <div class="result-value">
-          <span id="country"></span>
-        </div>
-      </div>
-    </div>
-
-    <div id="error" class="error">
-      <div class="error-icon">⚠️</div>
-      <div class="error-title">Bank Not Found</div>
-      <div class="error-message">
-        This bank is not in our database yet. Please contact support to add it, or check if your IBAN is correct.
-      </div>
-    </div>
-
-    <div class="footer">
-      <span class="badge">Offline</span>
-      <span class="badge">Free</span>
-      <span class="badge">No Tracking</span>
-    </div>
+    <div class="footer">Offline • Free • No tracking</div>
   </div>
 
   <script>
+    // --- Data (same logic, same keys) ---
     const bankRules = {
       "DE3704": { bic: "COBADEFFXXX", bank: "Commerzbank", country: "Germany" },
       "DE5001": { bic: "DEUTDEFFXXX", bank: "Deutsche Bank", country: "Germany" },
@@ -249,50 +84,86 @@
       "FR142004": { bic: "BNPAFRPPXXX", bank: "BNP Paribas", country: "France" },
       "GB29NWBK": { bic: "NWBKGB2L", bank: "NatWest", country: "UK" },
       "ES912100": { bic: "CAIXESBBXXX", bank: "CaixaBank", country: "Spain" }
+      // Add more banks here later
     };
 
+    // --- Small helpers (non-breaking) ---
+    const ibanEl   = document.getElementById("iban");
+    const resultEl = document.getElementById("result");
+    const errEl    = document.getElementById("err");
+    const bicEl    = document.getElementById("bic");
+    const bankEl   = document.getElementById("bank");
+    const countryEl= document.getElementById("country");
+
+    // Remember last IBAN for convenience
+    (function restoreLast(){
+      const last = localStorage.getItem('lastIBAN');
+      if (last) ibanEl.value = last;
+    })();
+    ibanEl.addEventListener('input', () => localStorage.setItem('lastIBAN', ibanEl.value));
+
+    // Enter to search
+    ibanEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') findBIC(); });
+
+    function showErr(msg){
+      errEl.textContent = msg || '';
+      errEl.style.display = msg ? 'block' : 'none';
+    }
+    function clearErr(){ showErr(''); }
+
+    function looksLikeIBAN(s){
+      const x = (s||'').replace(/\s+/g,'').toUpperCase();
+      return /^[A-Z]{2}[0-9A-Z]{13,34}$/.test(x);
+    }
+
+    // --- Core (unchanged behavior, just tiny UX) ---
     function findBIC() {
-      const input = document.getElementById("iban").value.replace(/\s/g, '').toUpperCase();
-      if (!input || input.length < 15) {
+      const inputRaw = ibanEl.value;
+      const input = inputRaw.replace(/\s/g, '').toUpperCase();
+      if (!input || input.length < 15 || !looksLikeIBAN(input)) {
         alert("Please enter a valid IBAN");
+        showErr("Please enter a valid IBAN.");
+        resultEl.classList.remove("show");
         return;
       }
+      clearErr();
+
       const country = input.substring(0, 2);
       const bankCode = input.substring(4, 8);
       const key = country + bankCode;
 
       let found = null;
       for (const rule in bankRules) {
-        if (rule.startsWith(key)) {
-          found = bankRules[rule];
-          break;
-        }
+        if (rule.startsWith(key)) { found = bankRules[rule]; break; }
       }
 
       if (found) {
-        document.getElementById("bic").textContent = found.bic;
-        document.getElementById("bank").textContent = found.bank;
-        document.getElementById("country").textContent = found.country;
-        document.getElementById("result").classList.add("show");
+        bicEl.textContent = found.bic;
+        bankEl.textContent = found.bank;
+        countryEl.textContent = found.country;
+        resultEl.classList.add("show");
       } else {
         alert("Bank not found. Try a major bank or add it to the code!");
+        showErr("Bank not found in local list. Check your IBAN or extend bankRules.");
+        resultEl.classList.remove("show");
       }
     }
 
     function copy(id, btn) {
       const text = document.getElementById(id).textContent;
+      if (!text) return;
       navigator.clipboard.writeText(text).then(() => {
         const old = btn.textContent;
         btn.textContent = "Copied!";
-        setTimeout(() => btn.textContent = old, 1000);
-      }).catch(err => {
-        alert("Failed to copy. Please copy manually.");
-      });
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = old; btn.classList.remove("copied"); }, 900);
+      }).catch(() => alert("Failed to copy. Please copy manually."));
     }
 
+    // Register service worker for offline use (cache-busted to avoid stale)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js');
+        navigator.serviceWorker.register('/service-worker.js?v=2').catch(()=>{});
       });
     }
   </script>
