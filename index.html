@@ -74,93 +74,81 @@
   </div>
 
   <script>
-    // --- Data (same logic, same keys) ---
+    // --- Data (clean, no duplicates) ---
     const bankRules = {
+      // Germany
       "DE3704": { bic: "COBADEFFXXX", bank: "Commerzbank", country: "Germany" },
       "DE5001": { bic: "DEUTDEFFXXX", bank: "Deutsche Bank", country: "Germany" },
       "DE7001": { bic: "PBNKDEFFXXX", bank: "Postbank", country: "Germany" },
-      "NL91INGB": { bic: "INGBNL2A", bank: "ING Bank", country: "Netherlands" },
-      "NL91ABNA": { bic: "ABNANL2A", bank: "ABN AMRO", country: "Netherlands" },
-      "FR142004": { bic: "BNPAFRPPXXX", bank: "BNP Paribas", country: "France" },
-      "GB29NWBK": { bic: "NWBKGB2L", bank: "NatWest", country: "UK" },
-      "ES912100": { bic: "CAIXESBBXXX", bank: "CaixaBank", country: "Spain" },
-      "DE3704": { bic: "COBADEFFXXX", bank: "Commerzbank", country: "Germany" },
-      "DE5001": { bic: "DEUTDEFFXXX", bank: "Deutsche Bank", country: "Germany" },
-      "DE7001": { bic: "PBNKDEFFXXX", bank: "Postbank", country: "Germany" },
-      "DE1203": { bic: "DKBKDEBBXXX", bank: "DKB (Deutsche Kreditbank)", country: "Germany" }, 
+      "DE1203": { bic: "DKBKDEBBXXX", bank: "DKB (Deutsche Kreditbank)", country: "Germany" },
       "DE9110": { bic: "INGDDEFFXXX", bank: "ING Germany", country: "Germany" },
 
+      // France
       "FR142004": { bic: "BNPAFRPPXXX", bank: "BNP Paribas", country: "France" },
       "FR761009": { bic: "CCBPFRPPXXX", bank: "Crédit Agricole", country: "France" },
       "FR763000": { bic: "SOGEFRPPXXX", bank: "Société Générale", country: "France" },
 
+      // United Kingdom
       "GB29NWBK": { bic: "NWBKGB2L", bank: "NatWest", country: "UK" },
       "GB20BARC": { bic: "BARCGB22", bank: "Barclays", country: "UK" },
       "GB82LOYD": { bic: "LOYDGB2L", bank: "Lloyds Bank", country: "UK" },
       "GB60HBUK": { bic: "HBUKGB4B", bank: "HSBC UK", country: "UK" },
 
+      // Netherlands
       "NL91ABNA": { bic: "ABNANL2A", bank: "ABN AMRO", country: "Netherlands" },
       "NL91INGB": { bic: "INGBNL2A", bank: "ING Bank", country: "Netherlands" },
       "NL02RABO": { bic: "RABONL2U", bank: "Rabobank", country: "Netherlands" },
       "NL23BUNQ": { bic: "BUNQNL2A", bank: "bunq", country: "Netherlands" },
 
+      // Spain
       "ES912100": { bic: "CAIXESBBXXX", bank: "CaixaBank", country: "Spain" },
       "ES792100": { bic: "BBVAESMMXXX", bank: "BBVA", country: "Spain" },
       "ES912004": { bic: "BSABESBBXXX", bank: "Banco Sabadell", country: "Spain" },
       "ES302038": { bic: "CAHMESMMXXX", bank: "Bankinter", country: "Spain" },
 
+      // Italy
       "IT60X0542": { bic: "UNCRITMMXXX", bank: "UniCredit", country: "Italy" },
       "IT60X0306": { bic: "BCITITMMXXX", bank: "Intesa Sanpaolo", country: "Italy" },
       "IT35X0760": { bic: "BPPIITRRXXX", bank: "BancoPosta", country: "Italy" },
 
+      // Portugal
       "PT500002": { bic: "CGDIPTPL", bank: "Caixa Geral de Depósitos", country: "Portugal" },
       "PT500007": { bic: "BESCPTPL", bank: "Novo Banco", country: "Portugal" },
       "PT500003": { bic: "BCOMPTPL", bank: "Millennium BCP", country: "Portugal" },
 
+      // Ireland
       "IE29AIBK": { bic: "AIBKIE2D", bank: "Allied Irish Bank", country: "Ireland" },
       "IE29BOFI": { bic: "BOFIIE2D", bank: "Bank of Ireland", country: "Ireland" },
 
+      // Pan-EU / others
       "LT60REVO": { bic: "REVOLT21", bank: "Revolut", country: "Lithuania" },
       "DE15926": { bic: "NTSBDEB1XXX", bank: "N26 Bank", country: "Germany" },
-      "BE6253": { bic: "KREDBEBB", bank: "KBC Bank", country: "Belgium" }
-};
-
-      // Add more banks here later
+      "BE6253":  { bic: "KREDBEBB",   bank: "KBC Bank", country: "Belgium" }
     };
 
-    // --- Small helpers (non-breaking) ---
-    const ibanEl   = document.getElementById("iban");
-    const resultEl = document.getElementById("result");
-    const errEl    = document.getElementById("err");
-    const bicEl    = document.getElementById("bic");
-    const bankEl   = document.getElementById("bank");
-    const countryEl= document.getElementById("country");
+    // --- Helpers ---
+    const ibanEl    = document.getElementById("iban");
+    const resultEl  = document.getElementById("result");
+    const errEl     = document.getElementById("err");
+    const bicEl     = document.getElementById("bic");
+    const bankEl    = document.getElementById("bank");
+    const countryEl = document.getElementById("country");
 
-    // Remember last IBAN for convenience
+    // Restore & remember last IBAN
     (function restoreLast(){
       const last = localStorage.getItem('lastIBAN');
       if (last) ibanEl.value = last;
     })();
     ibanEl.addEventListener('input', () => localStorage.setItem('lastIBAN', ibanEl.value));
-
-    // Enter to search
     ibanEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') findBIC(); });
 
-    function showErr(msg){
-      errEl.textContent = msg || '';
-      errEl.style.display = msg ? 'block' : 'none';
-    }
+    function showErr(msg){ errEl.textContent = msg || ''; errEl.style.display = msg ? 'block' : 'none'; }
     function clearErr(){ showErr(''); }
+    function looksLikeIBAN(s){ const x=(s||'').replace(/\s+/g,'').toUpperCase(); return /^[A-Z]{2}[0-9A-Z]{13,34}$/.test(x); }
 
-    function looksLikeIBAN(s){
-      const x = (s||'').replace(/\s+/g,'').toUpperCase();
-      return /^[A-Z]{2}[0-9A-Z]{13,34}$/.test(x);
-    }
-
-    // --- Core (unchanged behavior, just tiny UX) ---
+    // --- Core ---
     function findBIC() {
-      const inputRaw = ibanEl.value;
-      const input = inputRaw.replace(/\s/g, '').toUpperCase();
+      const input = (ibanEl.value || '').replace(/\s/g, '').toUpperCase();
       if (!input || input.length < 15 || !looksLikeIBAN(input)) {
         alert("Please enter a valid IBAN");
         showErr("Please enter a valid IBAN.");
@@ -171,11 +159,12 @@
 
       const country = input.substring(0, 2);
       const bankCode = input.substring(4, 8);
-      const key = country + bankCode;
+      const key = country + bankCode; // e.g. "DE3704", "NLABNA"
 
       let found = null;
       for (const rule in bankRules) {
-        if (rule.startsWith(key)) { found = bankRules[rule]; break; }
+        // tolerate short/long prefixes (some rules include checksum digits)
+        if (key.startsWith(rule) || rule.startsWith(key)) { found = bankRules[rule]; break; }
       }
 
       if (found) {
@@ -201,7 +190,7 @@
       }).catch(() => alert("Failed to copy. Please copy manually."));
     }
 
-    // Register service worker for offline use (cache-busted to avoid stale)
+    // PWA: cache-busted SW registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js?v=2').catch(()=>{});
