@@ -146,6 +146,17 @@
     function clearErr(){ showErr(''); }
     function looksLikeIBAN(s){ const x=(s||'').replace(/\s+/g,'').toUpperCase(); return /^[A-Z]{2}[0-9A-Z]{13,34}$/.test(x); }
 
+    // Get best (longest) matching rule so overlaps resolve correctly
+    function findBestRule(key){
+      let bestKey = null;
+      for (const rule in bankRules){
+        if (key.startsWith(rule) || rule.startsWith(key)){
+          if (!bestKey || rule.length > bestKey.length) bestKey = rule;
+        }
+      }
+      return bestKey ? bankRules[bestKey] : null;
+    }
+
     // --- Core ---
     function findBIC() {
       const input = (ibanEl.value || '').replace(/\s/g, '').toUpperCase();
@@ -159,13 +170,9 @@
 
       const country = input.substring(0, 2);
       const bankCode = input.substring(4, 8);
-      const key = country + bankCode; // e.g. "DE3704", "NLABNA"
+      const key = country + bankCode; // e.g. "DE3704", "NLABNA", "GBNWBK"
 
-      let found = null;
-      for (const rule in bankRules) {
-        // tolerate short/long prefixes (some rules include checksum digits)
-        if (key.startsWith(rule) || rule.startsWith(key)) { found = bankRules[rule]; break; }
-      }
+      const found = findBestRule(key);
 
       if (found) {
         bicEl.textContent = found.bic;
