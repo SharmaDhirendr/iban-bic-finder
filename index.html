@@ -325,31 +325,26 @@
     // Add your bank rules here in this format:
     // "CountryCode + BankCode": { bic: "BICCODE", bank: "Bank Name", country: "Country" }
     
-    const bankRules = {
-    
-  // Chinese banks (top by customers)
-  "CN34": { bic: "BOCNCNBJ", bank: "Bank of China", country: "China" },
-  "CN56": { bic: "ICBKCNBJ", bank: "Industrial and Commercial Bank of China (ICBC)", country: "China" },
-  "CN78": { bic: "BKCHCNBJ", bank: "China Construction Bank", country: "China" },
-  "CN90": { bic: "ABOCCNBJ", bank: "Agricultural Bank of China", country: "China" },
+   const bankRules = {
+  // --- Germany ---
+  "DE3704": { bic: "COBADEFFXXX", bank: "Commerzbank", country: "Germany" },
+  "DE5001": { bic: "DEUTDEFFXXX", bank: "Deutsche Bank", country: "Germany" },
 
-  // European banks (top by global customers)
-  "ES12": { bic: "BSCHESMM", bank: "Banco Santander", country: "Spain" },
-  "ES34": { bic: "BBVAESMM", bank: "BBVA", country: "Spain" },
-  "FR56": { bic: "BNPAFRPP", bank: "BNP Paribas", country: "France" },
-  "GB78": { bic: "MIDLGB2L", bank: "HSBC", country: "United Kingdom" },
-  "DE90": { bic: "COBADEFF", bank: "Commerzbank", country: "Germany" },
-  "NL01": { bic: "INGBNL2A", bank: "ING Group", country: "Netherlands" },
+  // --- Netherlands ---
+  "NLINGB": { bic: "INGBNL2A", bank: "ING Bank", country: "Netherlands" },
+  "NLABNA": { bic: "ABNANL2A", bank: "ABN AMRO", country: "Netherlands" },
 
-  // US banks (top retail)
-  "US23": { bic: "BOFAUS3N", bank: "Bank of America", country: "United States" },
-  "US45": { bic: "CHASUS33", bank: "JPMorgan Chase", country: "United States" },
-  "US67": { bic: "SCBLUS33", bank: "Citibank", country: "United States" },
-  "US89": { bic: "WEFBUS3W", bank: "Wells Fargo", country: "United States" },
+  // --- France ---
+  "FR2004": { bic: "BNPAFRPPXXX", bank: "BNP Paribas", country: "France" },
+  "FR3000": { bic: "SOGEFRPPXXX", bank: "Société Générale", country: "France" },
 
-  // Other major global
-  "BR01": { bic: "BRASBRRJ", bank: "Itaú Unibanco", country: "Brazil" },
-  "JP23": { bic: "MTBKPJ2T", bank: "Mizuho Bank", country: "Japan" }
+  // --- United Kingdom ---
+  "GBNWBK": { bic: "NWBKGB2L", bank: "NatWest", country: "United Kingdom" },
+  "GBBARC": { bic: "BARCGB22", bank: "Barclays", country: "United Kingdom" },
+
+  // --- Spain ---
+  "ES2100": { bic: "CAIXESBBXXX", bank: "CaixaBank", country: "Spain" },
+  "ES0182": { bic: "BBVAESMMXXX", bank: "BBVA", country: "Spain" }
 };
 
 // Example test function to check logic (e.g., match IBAN prefix and log details)
